@@ -20,17 +20,12 @@ library(dplyr)
 
 #### Overview:
 
-In this paper we demonstrate that the Central Limit Therom is in congruence with theoretical normal distributions.  In order to accomplish this we will generate a 1000 samples of lenf 40,  We will then take the means of each of these 1000 samples.  This will show that the density of the means is very sumilar to the theoretic density.  The exponential distribution will be simulated in R with rexp(n,lambda) where lambda is the rate parameter.  rexp uses Ahrens, J. H. and Dieter, U. (1972). Computer methods for sampling from the exponential and normal distributions. Communications of the ACM, 15, 873–882.  
+In this paper we demonstrate that the Central Limit Therom is in congruence with theoretical normal distributions.  In order to accomplish this we will generate a 1000 columns and 40 rows,  We will then take the means of each of these columns.  This will show that the density of the means is very sumilar to the theoretic density.  The siulation will use rexp(n,lambda) where lambda is the rate parameter and n is the number of rows.  rexp uses Ahrens, J. H. and Dieter, U. (1972). Computer methods for sampling from the exponential and normal distributions. Communications of the ACM, 15, 873–882.  
 
 
-#### Simulations: 
+#### The Exponential Distribution Simulation: 
 
-The mean of exponential distribution and the standard deviation are both 1/lambda where lambda = 0.2, and distribution of averages of 40 exponentials and will perform 1000 simulations.  
-
- 
-#### The Exponential Distribution: 
-
-    Density, distribution function, quantile function and random generation for the exponential distribution with rate (i.e., mean 1/rate).
+The mean of distribution and the standard deviation are both 1/lambda are given as lambda = 0.2, we will perform 1000 averages. 
 
      Usage
         dexp(x, rate = 1, log = FALSE)
