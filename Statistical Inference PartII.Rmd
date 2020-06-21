@@ -1,0 +1,153 @@
+---
+title: "Statistical Inference - Peer Graded Assignment"
+author: "Pete Petersen III"
+date: "6/20/2020"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(ggplot2)
+##library(tinytex)
+library(dplyr)
+```
+## Part 2: Basic Inferential Data Analysis Instructions
+
+Load the ToothGrowth data and perform some basic exploratory data analyses
+
+```{r, echo=FALSE, message=FALSE}
+library(datasets)
+library(knitr)
+library(car)
+data("ToothGrowth")
+attach(ToothGrowth)
+```
+
+```{r}
+kable(head(ToothGrowth))
+```
+
+
+
+```{r ToothPlot1, echo=FALSE, fig.width=5,fig.height=5,fig.cap="Fig. 4 Tooth Length"}
+
+boxplot(ToothGrowth$len ~ ToothGrowth$supp, ylab = 'Tooth Growth in (mm)', xlab = 'Supplement', )
+
+```
+
+The Box Plot above seems to indicate additional tooth growth in the OJ supplement over the VC supplement.
+
+```{r scatter4, message=FALSE ,echo=FALSE, fig.width=5,fig.height=5,fig.cap="Fig. 5 Growth by Supplement and Dose"}
+
+scatterplot(len ~ dose | supp, data=ToothGrowth,
+   xlab="Supplment Dose", ylab="Tooth Growth",
+   main="Growth by Supplment and Dose")
+
+```
+
+The scatter plot show a higher level of tooth growth at lower dosages as compared to the vitamin C.  However, at the higher dosage (2mg) the supplments seem equally effective. 
+
+## Data Summary
+
+```{r}
+str(ToothGrowth)
+kable(summary(ToothGrowth))
+
+```
+
+##  Confidence Intervals
+
+```{r}
+# Subset the data for confints
+ToothGrowth_oj <- subset(ToothGrowth, supp=='OJ')
+ToothGrowth_vc <- subset(ToothGrowth, supp=='VC')
+ConfIntTable <- rbind(
+mean(ToothGrowth$len) + c(-1, 1) * 1.96 * sd(ToothGrowth$len)/sqrt(nrow(ToothGrowth)),
+mean(ToothGrowth_oj$len) + c(-1, 1) * 1.96 * sd(ToothGrowth_oj$len)/sqrt(nrow(ToothGrowth_oj)),
+mean(ToothGrowth_vc$len) + c(-1, 1) * 1.96 * sd(ToothGrowth_vc$len)/sqrt(nrow(ToothGrowth_vc)))
+
+row.names(ConfIntTable) = c('Overall', 'OJ', 'VC')
+df_conf <- as.data.frame.matrix(ConfIntTable) 
+df_conf %>% 
+  rename(
+    'ConfInt-Low' = 'V1',
+    'ConfInt-High' = 'V2')
+
+
+```
+
+## Hypothesis Testing and Sample Analysis
+#####  All Data
+
+```{r}
+#Run Welch Test on entire Sample
+    model1 <- t.test(len ~ supp, data = ToothGrowth)
+    model1
+
+# Run power tests to determine power properties of our sample
+    all_delta <- power.t.test(n = nrow(ToothGrowth), power = .90, sd = sd(ToothGrowth$len))$delta
+    all_size <-  power.t.test( power = .90, delta=3, sd = sd(ToothGrowth$len))$n
+    all_power <- power.t.test(n = nrow(ToothGrowth), delta = 3, sd = sd(ToothGrowth$len))$power
+```
+
+The p value is somewhat high for all dosages.  Therefore we accept the null H0 hypthesis that there is no difference in the means of the supplements and also accept that there maybe some significance in general on supplement type accross all dosages.  
+
+Power testing indicates that we could only determine a delta of `r round(all_delta,2)` mm with our current sample size with .9 power. If we wanted to increase the length sensitivity to a delta of 3mm we would need a sample size of `r round(all_size,0)`.  At our current sample size of `r nrow(ToothGrowth)`, we can only detect a 3mm growth delta with `r round(all_power,2)` power.  
+
+
+#####  Analysis at .5mg Doses
+
+```{r}
+five <- subset(ToothGrowth, dose == "0.5")
+model2 <- t.test(len ~ supp, data = five)
+model2
+
+five_delta <- power.t.test(n = nrow(five), power = .90, sd = sd(five$len))$delta
+five_size <-  power.t.test(delta = 3, power = .90, sd = sd(five$len))$n
+five_power <- power.t.test(delta = 3,n = nrow(five) , sd = sd(five$len))$power
+```
+The p value is low at the .5 mg dose level.  Therefore we reject the H0 hypthesis that there is no difference in the means of the supplements and we accept that there is some signifcance to the impact on toothgrowth at this dose level.
+
+Power testing indicates that we could only determine a delta of `r round(five_delta,2)` mm with our current sample size with .9 power. If we wanted to increase the length sensitivity to a delta of 3mm we would need a sample size of `r round(five_size,0)`.  At our current sample size of `r nrow(five)`, we can only detect a 3mm growth delta with `r round(five_power,2)` power.  
+
+
+#####  Analysis at 1mg Doses
+
+```{r}
+one <- subset(ToothGrowth, dose == "1")
+model3 <- t.test(len ~ supp, data = one)
+model3
+
+one_delta <- power.t.test(n = nrow(one), power = .90, sd = sd(one$len))$delta
+one_size <-  power.t.test(delta = 3, power = .90, sd = sd(one$len))$n
+one_power <- power.t.test(delta = 3, n = nrow(one), sd = sd(one$len))$power
+```
+The p value is low at the 1 mg dose level.  Therefore we reject the H0 hypthesis that there is no difference in the means of the supplements and we accept that there is some signifcance to the impact on toothgrowth at this dose level.  
+
+Power testing indicates that we could only determine a delta of `r round(one_delta,2)` mm with our current sample size with .9 power. If we wanted to increase the length sensitivity to a delta of 3mm we would need a sample size of `r round(one_size,0)`.  At our current sample size of `r nrow(one)`, we can only detect a 3mm growth delta with `r round(one_power,2)` power.  
+
+
+#####  Analysis at 2mg Doses
+
+```{r}
+two <- subset(ToothGrowth, dose == "2")
+model4 <- t.test(len ~ supp, data = two)
+model4
+two_delta <- power.t.test(n = nrow(two), power = .90, sd = sd(two$len))$delta
+two_size <- power.t.test(delta = 3, power = .90, sd = sd(two$len))$n
+two_power <- power.t.test(delta = 3,n = nrow(two), sd = sd(two$len))$power
+
+```
+Zero is in the confidence interval and the p value is high. Therefore we can not reject the null hypthesis that the means of the two supplememts are equal at the 2mg dose for tooth growth.
+
+Power testing indicates that we could only determine a delta of `r round(two_delta,2)` mm with our current sample size with .9 power. If we wanted to increase the length sensitivity to a delta of 3mm we would need a sample size of `r round(two_size,0)`.  At our current sample size of `r nrow(two)`, we can only detect a 3mm growth delta with `r round(two_power,2)` power.  
+
+
+## Conclusion
+
+The exploratory phase of the analysis indicated that there was some possibility of correlation of tooth growth to supplement type and dose.  Both Confidence Intervals and Welch Two Sample hypothesis testing confirmed that there is significance at the .5 mg and 1mg dose levels and no attributable significance to the dose level by supplement type at the 2 mg level.  However, we must careful when we interpret the dosages as the power t.test indicates that diffences in the means is just within the required sample size.  We reccomend that the analysis be conducted with higher sample sizes in the future in order to confirm these findings.
